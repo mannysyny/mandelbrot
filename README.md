@@ -1,2 +1,2 @@
 # mandelbrot
-Mandlebrot renderer/engine written in Rust.
+Mandelbrot renderer/engine written in Rust.
