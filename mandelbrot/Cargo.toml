@@ -1,0 +1,9 @@
+[package]
+name = "mandelbrot_generator"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+num_complex = "0.4.4"
+image = "0.23.14"
+rayon = "1.8.0"
