@@ -12,22 +12,48 @@ enum FractalType {
     Julia(Complex<f64>)
 }
 
-fn compute_color(z: Complex<f64>, c: Complex<f64>, max_iter: u32) -> Rgb<u8> {
+fn compute_color(z: Complex<f64>, c: Complex<f64>, max_iter: u32, color_scheme: ColorScheme) -> Rgb<u8> {
     let mut i = 0;
     let mut w = z;
     while i < max_iter && w.norm() <= 2.0 {
         w = w * w + c;
         i += 1;
     }
-    let color = if i == max_iter {
-        Rgb([0, 0, 0])
-    } else {
-        let r = (i as f64 / max_iter as f64).powf(0.3);
-        let g = (i as f64 / max_iter as f64).powf(0.5);
-        let b = 1.0 - (i as f64 / max_iter as f64).powf(0.7);
-        Rgb([(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8])
+    let color = match color_scheme {
+        ColorScheme::BlackAndWhite => {
+            if i == max_iter {
+                Rgb([0, 0, 0])
+            } else {
+                let intensity = (i as f64 / max_iter as f64) * 255.0;
+                Rgb([intensity as u8, intensity as u8, intensity as u8])
+            }
+        },
+        ColorScheme::Rainbow => {
+            if i == max_iter {
+                Rgb([0, 0, 0])
+            } else {
+                let r = (i as f64 / max_iter as f64).powf(0.3);
+                let g = (i as f64 / max_iter as f64).powf(0.5);
+                let b = 1.0 - (i as f64 / max_iter as f64).powf(0.7);
+                Rgb([(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8])
+            }
+        },
+        ColorScheme::Grayscale => {
+            if i == max_iter {
+                Rgb([0, 0, 0])
+            } else {
+                let intensity = (i as f64 / max_iter as f64) * 255.0;
+                Rgb([intensity as u8, intensity as u8, intensity as u8])
+            }
+        }
     };
     color
+}
+
+enum ColorScheme {
+    BlackAndWhite,
+    Rainbow,
+    Grayscale
 }
 
 fn draw_fractal(width: u32, height: u32, max_iter: u32, scale: f64, fractal_type: FractalType) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
