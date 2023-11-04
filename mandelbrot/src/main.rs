@@ -56,16 +56,20 @@ enum ColorScheme {
     Grayscale
 }
 
-fn draw_fractal(width: u32, height: u32, max_iter: u32, scale: f64, fractal_type: FractalType) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+fn draw_fractal(width: u32, height: u32, max_iter: u32, scale: f64, fractal_type: FractalType, zoom_level: f64, pan_position: (f64, f64)) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let mut imgbuf = ImageBuffer::new(width, height);
     let (w, h) = (width as f64, height as f64);
-    let pb = ProgressBar::new((width * height) as u64);
+    let (capture_w, capture_h) = ((width as f64 / zoom_level) as u32, (height as f64 / zoom_level) as u32);
+    let (pan_x, pan_y) = pan_position;
+    let (view_w, view_h) = (capture_w as f64 / w * scale, capture_h as f64 / h * scale);
+    let (view_x, view_y) = (pan_x - view_w / 2.0, pan_y - view_h / 2.0);
+    let pb = ProgressBar::new((capture_w * capture_h) as u64);
     pb.set_style(ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} ({percent}%)")
         .progress_chars("#>-"));
     imgbuf.enumerate_pixels_mut().par_bridge().for_each(|(x, y, pixel)| {
-        let cx = (x as f64 - 0.5 * w) * scale / w;
-        let cy = (y as f64 - 0.5 * h) * scale / h;
+        let cx = (x as f64 - 0.5 * capture_w as f64) * scale / w + view_x;
+        let cy = (y as f64 - 0.5 * capture_h as f64) * scale / h + view_y;
         let c = Complex::new(cx, cy);
         let color = match fractal_type {
             FractalType::Mandelbrot => compute_color(Complex::new(0.0, 0.0), c, max_iter),
@@ -123,3 +127,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     resized.save_with_format(&mut file, image::ImageFormat::PNG)?;
     Ok(())
 }
+
