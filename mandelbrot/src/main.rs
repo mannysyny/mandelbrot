@@ -50,6 +50,71 @@ fn compute_color(z: Complex<f64>, c: Complex<f64>, max_iter: u32, color_scheme: 
     color
 }
 
+
+fn compute_color_burning_ship(z0: Complex<f64>, c: Complex<f64>, max_iter: u32) -> Rgb<u8> {
+    let mut z = z0;
+    let mut i = 0;
+    while z.norm() <= 2.0 && i < max_iter {
+        z = Complex::new(z.re.abs(), z.im.abs()).powf(2.0) + c;
+        i += 1;
+    }
+    let color = if i == max_iter {
+        Rgb([0, 0, 0])
+    } else {
+        let r = (i as f64 / max_iter as f64).powf(0.3);
+        let g = (i as f64 / max_iter as f64).powf(0.5);
+        let b = 1.0 - (i as f64 / max_iter as f64).powf(0.7);
+        Rgb([(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8])
+    };
+    color
+}
+
+enum FractalType {
+    Mandelbrot,
+    Julia(Complex<f64>),
+    BurningShip
+}
+
+fn compute_color(z0: Complex<f64>, c: Complex<f64>, max_iter: u32, fractal_type: FractalType) -> Rgb<u8> {
+    match fractal_type {
+        FractalType::Mandelbrot => {
+            let mut z = z0;
+            let mut i = 0;
+            while z.norm() <= 2.0 && i < max_iter {
+                z = z * z + c;
+                i += 1;
+            }
+            let color = if i == max_iter {
+                Rgb([0, 0, 0])
+            } else {
+                let r = (i as f64 / max_iter as f64).powf(0.3);
+                let g = (i as f64 / max_iter as f64).powf(0.5);
+                let b = 1.0 - (i as f64 / max_iter as f64).powf(0.7);
+                Rgb([(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8])
+            };
+            color
+        },
+        FractalType::Julia(z) => {
+            let mut z = z0;
+            let mut i = 0;
+            while z.norm() <= 2.0 && i < max_iter {
+                z = z * z + z;
+                i += 1;
+            }
+            let color = if i == max_iter {
+                Rgb([0, 0, 0])
+            } else {
+                let r = (i as f64 / max_iter as f64).powf(0.3);
+                let g = (i as f64 / max_iter as f64).powf(0.5);
+                let b = 1.0 - (i as f64 / max_iter as f64).powf(0.7);
+                Rgb([(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8])
+            };
+            color
+        },
+        FractalType::BurningShip => compute_color_burning_ship(z0, c, max_iter)
+    }
+}
+
 enum ColorScheme {
     BlackAndWhite,
     Rainbow,
